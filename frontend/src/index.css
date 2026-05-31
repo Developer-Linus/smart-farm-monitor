@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Leaflet needs its own CSS */
+@import "leaflet/dist/leaflet.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
