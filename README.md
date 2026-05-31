@@ -140,20 +140,36 @@ cd smart_farm
 
 ### 2. Run the start script
 
+**Linux / macOS:**
+
 ```bash
 chmod +x start.sh
 ./start.sh
 ```
 
-The script handles everything automatically:
+**Windows (PowerShell):**
 
-1. Checks Python and Node.js versions
-2. Creates a Python virtual environment
-3. Installs all Python dependencies
-4. Installs all npm packages
-5. Builds the React frontend
-6. Checks for the TFLite model (converts from `.h5` if needed)
-7. Starts the Flask server
+Allow script execution once (run PowerShell as Administrator):
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+Then launch:
+
+```powershell
+.\start.ps1
+```
+
+Both scripts handle everything automatically:
+
+1. Check Python and Node.js versions
+2. Create a Python virtual environment
+3. Install all Python dependencies
+4. Install all npm packages
+5. Build the React frontend
+6. Check for the TFLite model (converts from `.h5` if needed)
+7. Start the Flask server
 
 ### 3. Open the app
 
@@ -166,7 +182,8 @@ Go to **<http://localhost:5000>** in your browser. Create an account on the land
 Development mode starts Flask and the Vite dev server simultaneously. The Vite server provides hot module replacement so UI changes appear instantly without a full rebuild.
 
 ```bash
-./start.sh --dev
+./start.sh --dev          # Linux / macOS
+.\start.ps1 -Dev          # Windows
 ```
 
 | Server | URL |
@@ -185,13 +202,25 @@ If you do not have the ESP32 hardware yet, use the built-in simulator to send re
 **Run alongside the server:**
 
 ```bash
-./start.sh --demo                # Normal cycling simulation
-./start.sh --demo=dry            # Soil drops until irrigation triggers
-./start.sh --demo=hot            # High temperature alert
-./start.sh --demo=humid          # Low humidity alert
-./start.sh --demo=all            # All alerts at once with diseased leaf images
-./start.sh --demo=disease        # Normal sensors, diseased leaf images
-./start.sh --demo=healthy        # Normal sensors, healthy leaf images
+# Linux / macOS
+./start.sh --demo
+./start.sh --demo=dry
+./start.sh --demo=hot
+./start.sh --demo=humid
+./start.sh --demo=all
+./start.sh --demo=disease
+./start.sh --demo=healthy
+```
+
+```powershell
+# Windows
+.\start.ps1 -Demo
+.\start.ps1 -Demo -Scenario dry
+.\start.ps1 -Demo -Scenario hot
+.\start.ps1 -Demo -Scenario humid
+.\start.ps1 -Demo -Scenario all
+.\start.ps1 -Demo -Scenario disease
+.\start.ps1 -Demo -Scenario healthy
 ```
 
 **Run in a separate terminal while the server is already running:**
