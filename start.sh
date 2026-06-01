@@ -68,9 +68,15 @@ echo -e "  ───────────────────────
 # ── 1. Python ─────────────────────────────────────────────────────────────────
 hdr "[ 1 / 6 ]  Python"
 
-command -v python3 &>/dev/null || die "python3 not found. Install Python 3.9+ first."
+if command -v python3 &>/dev/null; then
+  PYTHON=python3
+elif command -v python &>/dev/null; then
+  PYTHON=python
+else
+  die "Python not found. Install Python 3.9+ and add it to PATH."
+fi
 
-PY_VER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+PY_VER=$($PYTHON -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 PY_MAJ=$(echo "$PY_VER" | cut -d. -f1)
 PY_MIN=$(echo "$PY_VER" | cut -d. -f2)
 [[ "$PY_MAJ" -ge 3 && "$PY_MIN" -ge 9 ]] || die "Python 3.9+ required. Found $PY_VER."
@@ -81,12 +87,16 @@ hdr "[ 2 / 6 ]  Python environment"
 
 if [[ ! -d "$VENV" ]]; then
   info "Creating virtualenv at backend/venv …"
-  python3 -m venv "$VENV"
+  $PYTHON -m venv "$VENV" || { echo "ERROR: Failed to create virtualenv. Install python3-venv and retry."; exit 1; }
 fi
 # shellcheck disable=SC1091
-source "$VENV/bin/activate"
+if [[ -f "$VENV/bin/activate" ]]; then
+  source "$VENV/bin/activate"
+else
+  source "$VENV/Scripts/activate"
+fi
 
-if python3 -c "import flask, flask_cors, numpy, PIL, werkzeug, tensorflow" &>/dev/null 2>&1; then
+if $PYTHON -c "import flask, flask_cors, numpy, PIL, werkzeug, tensorflow" &>/dev/null 2>&1; then
   ok "Python packages already installed"
 else
   info "Installing backend packages (first run may take a few minutes) …"
@@ -133,7 +143,7 @@ if [[ -f "$TFLITE" ]]; then
   ok "TFLite model found"
 elif [[ -f "$H5" ]]; then
   warn "tomato_disease.tflite missing — converting from best_model.h5 …"
-  python3 - <<PYEOF
+  $PYTHON - <<PYEOF
 import tensorflow as tf
 model = tf.keras.models.load_model("$H5")
 conv  = tf.lite.TFLiteConverter.from_keras_model(model)
@@ -188,7 +198,7 @@ trap cleanup EXIT INT TERM
 # Demo sensor simulator
 if $DEMO; then
   info "Starting demo simulator (scenario: $DEMO_SCENARIO) …"
-  python3 "$BACKEND/demo_sender.py" --scenario "$DEMO_SCENARIO" &
+  $PYTHON "$BACKEND/demo_sender.py" --scenario "$DEMO_SCENARIO" &
   PIDS+=($!)
   ok "Simulator running — sensor data will appear in a few seconds."
   echo ""
@@ -197,7 +207,7 @@ fi
 # Flask backend
 info "Starting Flask backend …"
 cd "$BACKEND"
-python3 app.py &
+$PYTHON app.py &
 PIDS+=($!)
 
 # Vite dev server (dev mode only)
